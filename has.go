@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/alexflint/go-arg"
 )
 
 var searchPaths = [...]string{
@@ -33,7 +35,7 @@ func searchPath(path string, name string) {
 			if filepath.Base(path) == name {
 				fmt.Println("FOUND: ", path)
 			}
-			//fmt.Println(path, info.Size())
+
 			return nil
 		})
 
@@ -43,13 +45,13 @@ func searchPath(path string, name string) {
 }
 
 func main() {
-	args := os.Args[1:]
-	//searchPath()
-	if len(args) > 0 {
-		nameOfProgram := args[0]
+	var args struct {
+		FileName string `arg:"positional, required"`
+	}
 
-		for _, f := range searchPaths {
-			searchPath(f, nameOfProgram)
-		}
+	arg.MustParse(&args)
+
+	for _, f := range searchPaths {
+		searchPath(f, args.FileName)
 	}
 }

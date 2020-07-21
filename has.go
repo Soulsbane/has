@@ -23,24 +23,33 @@ var searchPaths = [...]string{
 	//	"/opt/bin",
 }
 
+func isValidPath(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
 func searchPath(path string, name string) {
-	fmt.Println("Searching path: ", path)
-	err := filepath.Walk(path,
-		func(path string, info os.FileInfo, err error) error {
+	if isValidPath(path) {
+		err := filepath.Walk(path,
+			func(path string, info os.FileInfo, err error) error {
 
-			if err != nil {
-				return err
-			}
+				if err != nil {
+					return err
+				}
 
-			if filepath.Base(path) == name {
-				fmt.Println("FOUND: ", path)
-			}
+				if filepath.Base(path) == name {
+					fmt.Println(path)
+				}
 
-			return nil
-		})
+				return nil
+			})
 
-	if err != nil {
-		log.Println(err)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 

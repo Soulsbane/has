@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/alexflint/go-arg"
+	"github.com/fatih/color"
 )
 
 var searchPaths = [...]string{
@@ -41,7 +42,9 @@ func searchPath(path string, name string) {
 				}
 
 				if filepath.Base(path) == name {
-					fmt.Println(path)
+					dir := color.BlueString(filepath.Dir(path))
+					base := color.GreenString(filepath.Base(path))
+					fmt.Printf("%s/%s", dir, base)
 				}
 
 				return nil

@@ -15,13 +15,13 @@ var searchPaths = [...]string{
 	//"/usr/lib",
 	"/usr/sbin",
 
-	//"/usr/local/bin",
-	//"/usr/local/sbin",
-	//"/usr/share",
+	"/usr/local/bin",
+	"/usr/local/sbin",
+	//"/usr/share", // Needs permission
 
-	//"/bin",
-	//"/sbin",
-	//	"/opt/bin",
+	"/bin",
+	"/sbin",
+	"/opt/bin",
 }
 
 func isValidPath(path string) bool {
@@ -41,10 +41,10 @@ func searchPath(path string, name string) {
 					return err
 				}
 
-				if filepath.Base(path) == name {
+				if filepath.Base(path) == name && !info.IsDir() {
 					dir := color.BlueString(filepath.Dir(path) + "/")
 					base := color.GreenString(filepath.Base(path))
-					fmt.Printf("%s%s", dir, base)
+					fmt.Printf("%s%s\n", dir, base)
 				}
 
 				return nil

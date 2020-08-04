@@ -1,5 +1,7 @@
 package main
 
+// TODO: Perhaps a feature to use user's path also?
+
 import (
 	"fmt"
 	"log"
@@ -32,6 +34,23 @@ func isValidPath(path string) bool {
 	return true
 }
 
+func isValidLinkPath(info os.FileInfo, path string) string {
+	mode := info.Mode()
+	link := mode & os.ModeSymlink
+
+	if link != 0 {
+		linkPath, err := filepath.EvalSymlinks(path)
+
+		if err != nil {
+			return ""
+		}
+
+		return linkPath
+	}
+
+	return ""
+}
+
 func searchPath(path string, name string) {
 	if isValidPath(path) {
 		err := filepath.Walk(path,
@@ -39,6 +58,12 @@ func searchPath(path string, name string) {
 
 				if err != nil {
 					return err
+				}
+
+				isLinkPath := isValidLinkPath(info, path)
+
+				if isLinkPath != "" {
+					path = isLinkPath
 				}
 
 				if filepath.Base(path) == name && !info.IsDir() {

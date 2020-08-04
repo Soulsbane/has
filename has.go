@@ -1,18 +1,17 @@
 package main
 
-// TODO: Perhaps a feature to use user's path also?
-
 import (
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/alexflint/go-arg"
 	"github.com/fatih/color"
 )
 
-var searchPaths = [...]string{
+var searchPaths = []string{
 	"/usr/bin",
 	//"/usr/lib",
 	"/usr/sbin",
@@ -51,6 +50,17 @@ func isValidLinkPath(info os.FileInfo, path string) string {
 	return ""
 }
 
+func getEnvVarPaths() []string {
+	path, variableExists := os.LookupEnv("PATH")
+	var paths []string
+
+	if variableExists {
+		paths = strings.Split(path, ":")
+	}
+
+	return paths
+}
+
 func searchPath(path string, name string) {
 	if isValidPath(path) {
 		err := filepath.Walk(path,
@@ -83,10 +93,15 @@ func searchPath(path string, name string) {
 
 func main() {
 	var args struct {
-		FileName string `arg:"positional, required"`
+		FileName      string `arg:"positional, required"`
+		UsePathEnvVar bool   `arg:"-u" default:"false" help:"Include directories in user's $PATH."`
 	}
 
 	arg.MustParse(&args)
+
+	if args.UsePathEnvVar {
+		searchPaths = append(searchPaths, getEnvVarPaths()...)
+	}
 
 	for _, f := range searchPaths {
 		searchPath(f, args.FileName)

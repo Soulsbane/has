@@ -13,16 +13,15 @@ import (
 
 var searchPaths = []string{
 	"/usr/bin",
-	//"/usr/lib",
 	"/usr/sbin",
 
 	"/usr/local/bin",
 	"/usr/local/sbin",
-	//"/usr/share", // Needs permission
 
 	"/bin",
 	"/sbin",
 	"/opt/bin",
+	"/usr/share", // Needs permission
 }
 
 func isValidPath(path string) bool {
@@ -65,6 +64,9 @@ func searchPath(path string, name string) {
 	if isValidPath(path) {
 		err := filepath.Walk(path,
 			func(path string, info os.FileInfo, err error) error {
+				if info.Mode().Perm() == 0750 { // INFO: Some directories can't be read any further so skip them.
+					return filepath.SkipDir
+				}
 
 				if err != nil {
 					return err

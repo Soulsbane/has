@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexflint/go-arg"
 	"github.com/fatih/color"
+	"github.com/karrick/godirwalk"
 )
 
 var searchPaths = []string{
@@ -61,27 +62,27 @@ func getEnvVarPaths() []string {
 
 func searchPath(path string, name string) {
 	if isValidPath(path) {
-		// FIXME: Replace Walk with github.com/karrick/godirwalk
-		err := filepath.Walk(path,
-			func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
+		err := godirwalk.Walk(path, &godirwalk.Options{
+			Callback: func(path string, de *godirwalk.Dirent) error {
+				if de.IsSymlink() {
+					linkPath, err := filepath.EvalSymlinks(path)
+					path = linkPath
+
+					if err != nil {
+						fmt.Println(err)
+					}
 				}
 
-				isLinkPath := isValidLinkPath(info, path)
-
-				if isLinkPath != "" {
-					path = isLinkPath
-				}
-
-				if filepath.Base(path) == name && !info.IsDir() {
+				if filepath.Base(path) == name && !de.IsDir() {
 					dir := color.BlueString(filepath.Dir(path) + "/")
 					base := color.GreenString(filepath.Base(path))
 					fmt.Printf("%s%s\n", dir, base)
 				}
 
 				return nil
-			})
+			},
+			Unsorted: true,
+		})
 
 		if err != nil {
 			// FIXME: Permission errors still linger so silence the for now.

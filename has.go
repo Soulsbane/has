@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -65,10 +64,6 @@ func searchPath(path string, name string) {
 		// FIXME: Replace Walk with github.com/karrick/godirwalk
 		err := filepath.Walk(path,
 			func(path string, info os.FileInfo, err error) error {
-				if info.Mode().Perm() == 0750 { // INFO: Some directories can't be read any further so skip them.
-					return filepath.SkipDir
-				}
-
 				if err != nil {
 					return err
 				}
@@ -89,7 +84,7 @@ func searchPath(path string, name string) {
 			})
 
 		if err != nil {
-			log.Println(err)
+			// FIXME: Permission errors still linger so silence the for now.
 		}
 	}
 }

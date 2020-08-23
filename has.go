@@ -63,29 +63,30 @@ func getEnvVarPaths() []string {
 func searchPath(path string, name string) {
 	if isValidPath(path) {
 		err := godirwalk.Walk(path, &godirwalk.Options{
-			Callback: func(path string, de *godirwalk.Dirent) error {
-				if de.IsSymlink() {
-					linkPath, err := filepath.EvalSymlinks(path)
-					path = linkPath
+			Callback: func(currentPath string, de *godirwalk.Dirent) error {
+				if isValidPath(currentPath) {
+					if de.IsSymlink() {
+						linkPath, err := filepath.EvalSymlinks(currentPath)
+						currentPath = linkPath
 
-					if err != nil {
-						fmt.Println(err)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+
+					if filepath.Base(currentPath) == name && !de.IsDir() {
+						dir := color.BlueString(filepath.Dir(currentPath) + "/")
+						base := color.GreenString(filepath.Base(currentPath))
+						fmt.Printf("%s%s\n", dir, base)
 					}
 				}
-
-				if filepath.Base(path) == name && !de.IsDir() {
-					dir := color.BlueString(filepath.Dir(path) + "/")
-					base := color.GreenString(filepath.Base(path))
-					fmt.Printf("%s%s\n", dir, base)
-				}
-
 				return nil
 			},
 			Unsorted: true,
 		})
 
 		if err != nil {
-			// FIXME: Permission errors still linger so silence the for now.
+			// FIXME: Permission errors still linger so silence them for now.
 		}
 	}
 }

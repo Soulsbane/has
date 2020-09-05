@@ -94,7 +94,7 @@ func searchPath(path string, name string) {
 func main() {
 	var args struct {
 		FileName      string `arg:"positional, required"`
-		UsePathEnvVar bool   `arg:"-p, --path" default:"false" help:"Include directories in user's $PATH."`
+		UsePathEnvVar bool   `arg:"-p, --path" default:"true" help:"Include directories in user's $PATH."`
 	}
 
 	arg.MustParse(&args)

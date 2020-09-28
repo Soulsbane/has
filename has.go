@@ -60,16 +60,16 @@ func getEnvVarPaths() []string {
 	return paths
 }
 
-// TODO: match a link name but show what it's pointing to.
-// /home/soulsbane/bin/getmac -> /home/soulsbane/Projects/Golang/getmacname/getmacname
 func searchPath(path string, name string) {
 	if isValidPath(path) {
 		err := godirwalk.Walk(path, &godirwalk.Options{
 			Callback: func(currentPath string, de *godirwalk.Dirent) error {
 				if isValidPath(currentPath) {
-					if de.IsSymlink() {
+					if de.IsSymlink() && filepath.Base(currentPath) == name {
 						linkPath, err := filepath.EvalSymlinks(currentPath)
 						currentPath = linkPath
+
+						fmt.Printf("Link: %s => %s\n", color.YellowString(de.Name()), color.BlueString(linkPath))
 
 						if err != nil {
 							fmt.Println(err)

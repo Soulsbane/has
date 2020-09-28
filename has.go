@@ -60,6 +60,8 @@ func getEnvVarPaths() []string {
 	return paths
 }
 
+// TODO: match a link name but show what it's pointing to.
+// /home/soulsbane/bin/getmac -> /home/soulsbane/Projects/Golang/getmacname/getmacname
 func searchPath(path string, name string) {
 	if isValidPath(path) {
 		err := godirwalk.Walk(path, &godirwalk.Options{
@@ -93,13 +95,13 @@ func searchPath(path string, name string) {
 
 func main() {
 	var args struct {
-		FileName      string `arg:"positional, required"`
-		UsePathEnvVar bool   `arg:"-p, --path" default:"true" help:"Include directories in user's $PATH."`
+		FileName     string `arg:"positional, required"`
+		NoPathEnvVar bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
 	}
 
 	arg.MustParse(&args)
 
-	if args.UsePathEnvVar {
+	if args.NoPathEnvVar == false {
 		searchPaths = append(searchPaths, getEnvVarPaths()...)
 	}
 

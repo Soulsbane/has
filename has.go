@@ -64,9 +64,9 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	if isValidPath(dirName) {
 		if de.IsSymlink() && filepath.Base(dirName) == nameToSearchFor {
 			linkPath, err := filepath.EvalSymlinks(dirName)
-			dirName = linkPath
 
 			fmt.Printf("Link: %s => %s\n", color.YellowString(dirName), color.BlueString(linkPath))
+			dirName = linkPath
 
 			if err != nil {
 				fmt.Println(err)

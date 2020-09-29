@@ -69,7 +69,7 @@ func searchPath(path string, name string) {
 						linkPath, err := filepath.EvalSymlinks(currentPath)
 						currentPath = linkPath
 
-						fmt.Printf("Link: %s => %s\n", color.YellowString(de.Name()), color.BlueString(linkPath))
+						fmt.Printf("Link: %s => %s\n", color.YellowString(currentPath), color.BlueString(linkPath))
 
 						if err != nil {
 							fmt.Println(err)

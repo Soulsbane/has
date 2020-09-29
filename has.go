@@ -32,23 +32,6 @@ func isValidPath(path string) bool {
 	return true
 }
 
-func isValidLinkPath(info os.FileInfo, path string) string {
-	mode := info.Mode()
-	link := mode & os.ModeSymlink
-
-	if link != 0 {
-		linkPath, err := filepath.EvalSymlinks(path)
-
-		if err != nil {
-			return ""
-		}
-
-		return linkPath
-	}
-
-	return ""
-}
-
 func getEnvVarPaths() []string {
 	path, variableExists := os.LookupEnv("PATH")
 	var paths []string
@@ -60,28 +43,37 @@ func getEnvVarPaths() []string {
 	return paths
 }
 
-func searchPath(path string, name string) {
-	if isValidPath(path) {
-		err := godirwalk.Walk(path, &godirwalk.Options{
-			Callback: func(currentPath string, de *godirwalk.Dirent) error {
-				if isValidPath(currentPath) {
-					if de.IsSymlink() && filepath.Base(currentPath) == name {
-						linkPath, err := filepath.EvalSymlinks(currentPath)
-						currentPath = linkPath
+func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
+	if isValidPath(dirName) {
+		if de.IsSymlink() && filepath.Base(dirName) == nameToSearchFor {
+			linkPath, err := filepath.EvalSymlinks(dirName)
+			dirName = linkPath
 
-						fmt.Printf("Link: %s => %s\n", color.YellowString(currentPath), color.BlueString(linkPath))
+			fmt.Printf("Link: %s => %s\n", color.YellowString(dirName), color.BlueString(linkPath))
 
-						if err != nil {
-							fmt.Println(err)
-						}
-					}
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 
-					if filepath.Base(currentPath) == name && !de.IsDir() {
-						dir := color.BlueString(filepath.Dir(currentPath) + "/")
-						base := color.GreenString(filepath.Base(currentPath))
-						fmt.Printf("%s%s\n", dir, base)
-					}
-				}
+		if filepath.Base(dirName) == nameToSearchFor && !de.IsDir() {
+			dir := color.BlueString(filepath.Dir(dirName) + "/")
+			base := color.GreenString(filepath.Base(dirName))
+			fmt.Printf("%s%s\n", dir, base)
+		}
+	}
+}
+
+// FIXME: Handle duplicate paths to fileName
+func searchDirs(nameToSearchFor string, noPathEnvVar bool) {
+	if noPathEnvVar == false {
+		searchPaths = append(searchPaths, getEnvVarPaths()...)
+	}
+
+	for _, dirToSearch := range searchPaths {
+		err := godirwalk.Walk(dirToSearch, &godirwalk.Options{
+			Callback: func(walkDir string, de *godirwalk.Dirent) error {
+				searchDir(walkDir, nameToSearchFor, de)
 				return nil
 			},
 			Unsorted: true,
@@ -100,12 +92,5 @@ func main() {
 	}
 
 	arg.MustParse(&args)
-
-	if args.NoPathEnvVar == false {
-		searchPaths = append(searchPaths, getEnvVarPaths()...)
-	}
-
-	for _, f := range searchPaths {
-		searchPath(f, args.FileName)
-	}
+	searchDirs(args.FileName, args.NoPathEnvVar)
 }

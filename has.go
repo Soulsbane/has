@@ -43,6 +43,23 @@ func getEnvVarPaths() []string {
 	return paths
 }
 
+// Taken from https://www.reddit.com/r/golang/comments/5ia523/idiomatic_way_to_remove_duplicates_in_a_slice/
+func removeDuplicateDirs(s []string) []string {
+	seen := make(map[string]struct{}, len(s))
+	j := 0
+
+	for _, v := range s {
+		if _, ok := seen[v]; ok {
+			continue
+		}
+		seen[v] = struct{}{}
+		s[j] = v
+		j++
+	}
+
+	return s[:j]
+}
+
 func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	if isValidPath(dirName) {
 		if de.IsSymlink() && filepath.Base(dirName) == nameToSearchFor {
@@ -69,6 +86,8 @@ func searchDirs(nameToSearchFor string, noPathEnvVar bool) {
 	if noPathEnvVar == false {
 		searchPaths = append(searchPaths, getEnvVarPaths()...)
 	}
+
+	searchPaths = removeDuplicateDirs(searchPaths)
 
 	for _, dirToSearch := range searchPaths {
 		err := godirwalk.Walk(dirToSearch, &godirwalk.Options{

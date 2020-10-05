@@ -81,7 +81,6 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	}
 }
 
-// FIXME: Handle duplicate paths to fileName
 func searchDirs(nameToSearchFor string, noPathEnvVar bool) {
 	if noPathEnvVar == false {
 		searchPaths = append(searchPaths, getEnvVarPaths()...)

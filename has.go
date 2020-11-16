@@ -81,8 +81,9 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	}
 }
 
-func searchDirs(nameToSearchFor string, noPathEnvVar bool) {
-	if noPathEnvVar == false {
+// TODO: make use of path, err := exec.LookPath("fortune")
+func searchDirs(nameToSearchFor string, noPath bool) {
+	if !noPath {
 		searchPaths = append(searchPaths, getEnvVarPaths()...)
 	}
 
@@ -105,10 +106,10 @@ func searchDirs(nameToSearchFor string, noPathEnvVar bool) {
 
 func main() {
 	var args struct {
-		FileName     string `arg:"positional, required"`
-		NoPathEnvVar bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
+		FileName string `arg:"positional, required"`
+		NoPath   bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
 	}
 
 	arg.MustParse(&args)
-	searchDirs(args.FileName, args.NoPathEnvVar)
+	searchDirs(args.FileName, args.NoPath)
 }

@@ -106,8 +106,9 @@ func searchDirs(nameToSearchFor string, noPath bool) {
 
 func main() {
 	var args struct {
-		FileName string `arg:"positional, required"`
-		NoPath   bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
+		FileName  string `arg:"positional, required"`
+		NoPath    bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
+		ListPaths bool   `arg:"-l, --list-paths" default:"false" help:"List search Paths."`
 	}
 
 	arg.MustParse(&args)

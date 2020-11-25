@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/alexflint/go-arg"
 	"github.com/fatih/color"
@@ -32,34 +32,6 @@ func isValidPath(path string) bool {
 	return true
 }
 
-func getEnvVarPaths() []string {
-	path, variableExists := os.LookupEnv("PATH")
-	var paths []string
-
-	if variableExists {
-		paths = strings.Split(path, ":")
-	}
-
-	return paths
-}
-
-// Taken from https://www.reddit.com/r/golang/comments/5ia523/idiomatic_way_to_remove_duplicates_in_a_slice/
-func removeDuplicateDirs(s []string) []string {
-	seen := make(map[string]struct{}, len(s))
-	j := 0
-
-	for _, v := range s {
-		if _, ok := seen[v]; ok {
-			continue
-		}
-		seen[v] = struct{}{}
-		s[j] = v
-		j++
-	}
-
-	return s[:j]
-}
-
 func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	if isValidPath(dirName) {
 		if de.IsSymlink() && filepath.Base(dirName) == nameToSearchFor {
@@ -81,13 +53,27 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	}
 }
 
+func lookPath(fileName string) {
+	stat, _ := os.Lstat(fileName)
+
+	if stat.Mode()&os.ModeSymlink == os.ModeSymlink {
+		linkPath, _ := filepath.EvalSymlinks(fileName)
+		//fmt.Printf("lookPathLink: %s => %s\n", color.YellowString(fileName), color.BlueString(linkPath))
+		fmt.Printf("%s => %s\n", color.YellowString(fileName), color.BlueString(linkPath))
+	} else {
+		dir := color.BlueString(filepath.Dir(fileName) + "/")
+		base := color.GreenString(filepath.Base(fileName))
+		//fmt.Printf("lookPath: %s%s\n", dir, base)
+		fmt.Printf("%s%s\n", dir, base)
+	}
+}
+
 // TODO: make use of path, err := exec.LookPath("fortune")
 func searchDirs(nameToSearchFor string, noPath bool) {
 	if !noPath {
-		searchPaths = append(searchPaths, getEnvVarPaths()...)
+		path, _ := exec.LookPath(nameToSearchFor)
+		lookPath(path)
 	}
-
-	searchPaths = removeDuplicateDirs(searchPaths)
 
 	for _, dirToSearch := range searchPaths {
 		err := godirwalk.Walk(dirToSearch, &godirwalk.Options{
@@ -106,9 +92,8 @@ func searchDirs(nameToSearchFor string, noPath bool) {
 
 func main() {
 	var args struct {
-		FileName  string `arg:"positional, required"`
-		NoPath    bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
-		ListPaths bool   `arg:"-l, --list-paths" default:"false" help:"List search Paths."`
+		FileName string `arg:"positional, required"`
+		NoPath   bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
 	}
 
 	arg.MustParse(&args)

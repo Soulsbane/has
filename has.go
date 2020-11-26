@@ -24,6 +24,8 @@ var searchPaths = []string{
 	"/usr/share", // Needs permission
 }
 
+var pathMatches = map[string]string{}
+
 func isValidPath(path string) bool {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return false
@@ -36,9 +38,8 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 	if isValidPath(dirName) {
 		if de.IsSymlink() && filepath.Base(dirName) == nameToSearchFor {
 			linkPath, err := filepath.EvalSymlinks(dirName)
-
-			fmt.Printf("Link: %s => %s\n", color.YellowString(dirName), color.BlueString(linkPath))
 			dirName = linkPath
+			pathMatches[dirName] = linkPath
 
 			if err != nil {
 				fmt.Println(err)
@@ -46,9 +47,7 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 		}
 
 		if filepath.Base(dirName) == nameToSearchFor && !de.IsDir() {
-			dir := color.BlueString(filepath.Dir(dirName) + "/")
-			base := color.GreenString(filepath.Base(dirName))
-			fmt.Printf("%s%s\n", dir, base)
+			pathMatches[dirName] = ""
 		}
 	}
 }
@@ -58,17 +57,12 @@ func lookPath(fileName string) {
 
 	if stat.Mode()&os.ModeSymlink == os.ModeSymlink {
 		linkPath, _ := filepath.EvalSymlinks(fileName)
-		//fmt.Printf("lookPathLink: %s => %s\n", color.YellowString(fileName), color.BlueString(linkPath))
-		fmt.Printf("%s => %s\n", color.YellowString(fileName), color.BlueString(linkPath))
+		pathMatches[fileName] = linkPath
 	} else {
-		dir := color.BlueString(filepath.Dir(fileName) + "/")
-		base := color.GreenString(filepath.Base(fileName))
-		//fmt.Printf("lookPath: %s%s\n", dir, base)
-		fmt.Printf("%s%s\n", dir, base)
+		pathMatches[fileName] = ""
 	}
 }
 
-// TODO: make use of path, err := exec.LookPath("fortune")
 func searchDirs(nameToSearchFor string, noPath bool) {
 	if !noPath {
 		path, _ := exec.LookPath(nameToSearchFor)
@@ -85,7 +79,25 @@ func searchDirs(nameToSearchFor string, noPath bool) {
 		})
 
 		if err != nil {
-			// FIXME: Permission errors still linger so silence them for now.
+			// FIXME: Permission errors from distros using wrong permissions.
+		}
+	}
+}
+
+func colorizePath(path string) string {
+	fileName := path
+	dir := color.BlueString(filepath.Dir(fileName) + "/")
+	base := color.GreenString(filepath.Base(fileName))
+
+	return dir + base
+}
+
+func listMatches() {
+	for path, linkPath := range pathMatches {
+		if len(linkPath) > 0 {
+			fmt.Printf("%s => %s\n", colorizePath(path), colorizePath(linkPath))
+		} else {
+			fmt.Println(colorizePath(path))
 		}
 	}
 }
@@ -98,4 +110,5 @@ func main() {
 
 	arg.MustParse(&args)
 	searchDirs(args.FileName, args.NoPath)
+	listMatches()
 }

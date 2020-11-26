@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 
 	"github.com/alexflint/go-arg"
@@ -84,11 +85,11 @@ func searchDirs(nameToSearchFor string, noPath bool) {
 	}
 }
 
-func colorizePath(path string) string {
-	dir := color.BlueString(filepath.Dir(path) + "/")
-	base := color.GreenString(filepath.Base(path))
+func colorizePath(name string) string {
+	dir := color.BlueString(filepath.Dir(name))
+	base := color.GreenString(filepath.Base(name))
 
-	return dir + base
+	return path.Join(dir, base)
 }
 
 func listMatches() {

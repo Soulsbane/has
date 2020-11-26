@@ -85,19 +85,23 @@ func searchDirs(nameToSearchFor string, noPath bool) {
 	}
 }
 
-func colorizePath(name string) string {
+func colorizePath(name string, ugly bool) string {
+	if ugly {
+		return name
+	}
+
 	dir := color.BlueString(filepath.Dir(name))
 	base := color.GreenString(filepath.Base(name))
 
 	return path.Join(dir, base)
 }
 
-func listMatches() {
+func listMatches(ugly bool) {
 	for path, linkPath := range pathMatches {
 		if len(linkPath) > 0 {
-			fmt.Printf("%s => %s\n", colorizePath(path), colorizePath(linkPath))
+			fmt.Printf("%s => %s\n", colorizePath(path, ugly), colorizePath(linkPath, ugly))
 		} else {
-			fmt.Println(colorizePath(path))
+			fmt.Println(colorizePath(path, ugly))
 		}
 	}
 }
@@ -106,9 +110,10 @@ func main() {
 	var args struct {
 		FileName string `arg:"positional, required"`
 		NoPath   bool   `arg:"-n, --no-path" default:"false" help:"Include directories in user's $PATH."`
+		Ugly     bool   `arg:"-u, --ugly" default:"false" help:"Remove colorized output. Yes it's ugly."`
 	}
 
 	arg.MustParse(&args)
 	searchDirs(args.FileName, args.NoPath)
-	listMatches()
+	listMatches(args.Ugly)
 }

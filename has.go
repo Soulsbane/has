@@ -85,9 +85,8 @@ func searchDirs(nameToSearchFor string, noPath bool) {
 }
 
 func colorizePath(path string) string {
-	fileName := path
-	dir := color.BlueString(filepath.Dir(fileName) + "/")
-	base := color.GreenString(filepath.Base(fileName))
+	dir := color.BlueString(filepath.Dir(path) + "/")
+	base := color.GreenString(filepath.Base(path))
 
 	return dir + base
 }

@@ -54,13 +54,16 @@ func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
 }
 
 func lookPath(fileName string) {
-	stat, _ := os.Lstat(fileName)
+	stat, err := os.Lstat(fileName)
 
-	if stat.Mode()&os.ModeSymlink == os.ModeSymlink {
-		linkPath, _ := filepath.EvalSymlinks(fileName)
-		pathMatches[fileName] = linkPath
-	} else {
-		pathMatches[fileName] = ""
+	if err == nil {
+
+		if stat.Mode()&os.ModeSymlink == os.ModeSymlink {
+			linkPath, _ := filepath.EvalSymlinks(fileName)
+			pathMatches[fileName] = linkPath
+		} else {
+			pathMatches[fileName] = ""
+		}
 	}
 }
 

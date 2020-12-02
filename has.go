@@ -100,12 +100,16 @@ func colorizePath(name string, ugly bool) string {
 }
 
 func listMatches(ugly bool) {
-	for path, linkPath := range pathMatches {
-		if len(linkPath) > 0 {
-			fmt.Printf("%s => %s\n", colorizePath(path, ugly), colorizePath(linkPath, ugly))
-		} else {
-			fmt.Println(colorizePath(path, ugly))
+	if len(pathMatches) > 0 {
+		for path, linkPath := range pathMatches {
+			if len(linkPath) > 0 {
+				fmt.Printf("%s => %s\n", colorizePath(path, ugly), colorizePath(linkPath, ugly))
+			} else {
+				fmt.Println(colorizePath(path, ugly))
+			}
 		}
+	} else {
+		fmt.Println("No files found!")
 	}
 }
 

@@ -3,8 +3,10 @@ module github.com/Soulsbane/has
 go 1.14
 
 require (
-	github.com/alexflint/go-arg v1.3.0
-	github.com/fatih/color v1.10.0
+	github.com/alexflint/go-arg v1.4.2
+	github.com/fatih/color v1.12.0
 	github.com/karrick/godirwalk v1.16.1
-	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	github.com/mattn/go-isatty v0.0.13 // indirect
+	github.com/saracen/walker v0.1.2 // indirect
+	golang.org/x/sys v0.0.0-20210531225629-47163c9f4e4f // indirect
 )

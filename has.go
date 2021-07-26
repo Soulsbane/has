@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/alexflint/go-arg"
@@ -76,12 +76,26 @@ func lookPath(fileName string) {
 	}
 }
 
+func getAdditionalPaths() []string {
+	path, variableExists := os.LookupEnv("PATH")
+	var paths []string
+
+	if variableExists {
+		paths = strings.Split(path, ":")
+	}
+
+	return paths
+}
+
 func findExecutable(nameToSearchFor string, noPath bool) {
 	var mutex = &sync.Mutex{}
 
 	if !noPath {
-		path, _ := exec.LookPath(nameToSearchFor)
-		lookPath(path)
+		// FIXME: Need more tests to see which approach is faster
+		/*path, _ := exec.LookPath(nameToSearchFor)
+		lookPath(path)*/
+		envPath := getAdditionalPaths()
+		searchPaths = append(searchPaths, envPath...)
 	}
 
 	for _, dirToSearch := range searchPaths {

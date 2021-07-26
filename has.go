@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"sync"
 
 	"github.com/alexflint/go-arg"
 	"github.com/fatih/color"
-	"github.com/karrick/godirwalk"
+	"github.com/saracen/walker"
 )
 
 var searchPaths = []string{
@@ -35,20 +37,27 @@ func isValidPath(path string) bool {
 	return true
 }
 
-func searchDir(dirName string, nameToSearchFor string, de *godirwalk.Dirent) {
+func isSymbolicLink(info fs.FileInfo) bool {
+	return info.Mode()&os.ModeSymlink == os.ModeSymlink
+}
+
+func isMatch(dirName string, nameToSearchFor string, info fs.FileInfo) {
 	if isValidPath(dirName) {
-		if de.IsSymlink() && filepath.Base(dirName) == nameToSearchFor {
-			linkPath, err := filepath.EvalSymlinks(dirName)
-			dirName = linkPath
-			pathMatches[dirName] = linkPath
+		if info.Name() == nameToSearchFor {
+			if isSymbolicLink(info) {
+				linkPath, err := filepath.EvalSymlinks(dirName)
+				dirName = linkPath
 
-			if err != nil {
-				fmt.Println(err)
+				pathMatches[dirName] = linkPath
+
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
-		}
 
-		if filepath.Base(dirName) == nameToSearchFor && !de.IsDir() {
-			pathMatches[dirName] = ""
+			if !info.IsDir() {
+				pathMatches[dirName] = ""
+			}
 		}
 	}
 }
@@ -67,24 +76,32 @@ func lookPath(fileName string) {
 	}
 }
 
-func searchDirs(nameToSearchFor string, noPath bool) {
+func findExecutable(nameToSearchFor string, noPath bool) {
+	var mutex = &sync.Mutex{}
+
 	if !noPath {
 		path, _ := exec.LookPath(nameToSearchFor)
 		lookPath(path)
 	}
 
 	for _, dirToSearch := range searchPaths {
-		err := godirwalk.Walk(dirToSearch, &godirwalk.Options{
-			Callback: func(walkDir string, de *godirwalk.Dirent) error {
-				searchDir(walkDir, nameToSearchFor, de)
-				return nil
-			},
-			Unsorted: true,
+		walkFn := func(pathname string, fi os.FileInfo) error {
+			mutex.Lock()
+			isMatch(pathname, nameToSearchFor, fi)
+			mutex.Unlock()
+
+			return nil
+		}
+
+		errorCallbackOption := walker.WithErrorCallback(func(pathname string, err error) error {
+			if os.IsPermission(err) {
+				return nil // INFO: Ignore permission errors
+			}
+
+			return err // INFO: Stop on all other errors
 		})
 
-		if err != nil {
-			// FIXME: Permission errors from distros using wrong permissions.
-		}
+		walker.Walk(dirToSearch, walkFn, errorCallbackOption)
 	}
 }
 
@@ -121,6 +138,6 @@ func main() {
 	}
 
 	arg.MustParse(&args)
-	searchDirs(args.FileName, args.NoPath)
+	findExecutable(args.FileName, args.NoPath)
 	listMatches(args.Ugly)
 }

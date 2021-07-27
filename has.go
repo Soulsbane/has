@@ -62,20 +62,6 @@ func isMatch(dirName string, nameToSearchFor string, info fs.FileInfo) {
 	}
 }
 
-func lookPath(fileName string) {
-	stat, err := os.Lstat(fileName)
-
-	if err == nil {
-
-		if stat.Mode()&os.ModeSymlink == os.ModeSymlink {
-			linkPath, _ := filepath.EvalSymlinks(fileName)
-			pathMatches[fileName] = linkPath
-		} else {
-			pathMatches[fileName] = ""
-		}
-	}
-}
-
 func getAdditionalPaths() []string {
 	path, variableExists := os.LookupEnv("PATH")
 	var paths []string
@@ -91,9 +77,6 @@ func findExecutable(nameToSearchFor string, noPath bool) {
 	var mutex = &sync.Mutex{}
 
 	if !noPath {
-		// FIXME: Need more tests to see which approach is faster
-		/*path, _ := exec.LookPath(nameToSearchFor)
-		lookPath(path)*/
 		envPath := getAdditionalPaths()
 		searchPaths = append(searchPaths, envPath...)
 	}

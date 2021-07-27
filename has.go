@@ -99,9 +99,9 @@ func findExecutable(nameToSearchFor string, noPath bool) {
 	}
 
 	for _, dirToSearch := range searchPaths {
-		walkFn := func(pathname string, fi os.FileInfo) error {
+		walkFn := func(path string, fileInfo os.FileInfo) error {
 			mutex.Lock()
-			isMatch(pathname, nameToSearchFor, fi)
+			isMatch(path, nameToSearchFor, fileInfo)
 			mutex.Unlock()
 
 			return nil

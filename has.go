@@ -42,13 +42,17 @@ func isSymbolicLink(info fs.FileInfo) bool {
 }
 
 func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
+	var mutex = &sync.Mutex{}
+
 	if isValidPath(dirName) {
 		if info.Name() == nameToSearchFor {
 			if isSymbolicLink(info) {
 				linkPath, err := filepath.EvalSymlinks(dirName)
 				dirName = linkPath
 
+				mutex.Lock()
 				pathMatches[dirName] = linkPath
+				mutex.Unlock()
 
 				if err != nil {
 					fmt.Println(err)
@@ -56,7 +60,9 @@ func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 			}
 
 			if !info.IsDir() {
+				mutex.Lock()
 				pathMatches[dirName] = ""
+				mutex.Unlock()
 			}
 		}
 	}
@@ -74,8 +80,6 @@ func getAdditionalPaths() []string {
 }
 
 func findExecutable(nameToSearchFor string, noPath bool) {
-	var mutex = &sync.Mutex{}
-
 	if !noPath {
 		envPath := getAdditionalPaths()
 		searchPaths = append(searchPaths, envPath...)
@@ -83,10 +87,7 @@ func findExecutable(nameToSearchFor string, noPath bool) {
 
 	for _, dirToSearch := range searchPaths {
 		walkFn := func(path string, fileInfo os.FileInfo) error {
-			mutex.Lock()
 			addMatches(path, nameToSearchFor, fileInfo)
-			mutex.Unlock()
-
 			return nil
 		}
 

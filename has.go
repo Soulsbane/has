@@ -41,6 +41,10 @@ func isSymbolicLink(info fs.FileInfo) bool {
 	return info.Mode()&os.ModeSymlink == os.ModeSymlink
 }
 
+func isFileExecutable(mode os.FileMode) bool {
+	return mode&0111 != 0
+}
+
 func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 	var mutex = &sync.Mutex{}
 
@@ -50,16 +54,18 @@ func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 				linkPath, err := filepath.EvalSymlinks(dirName)
 				dirName = linkPath
 
-				mutex.Lock()
-				pathMatches[dirName] = linkPath
-				mutex.Unlock()
+				if isFileExecutable(info.Mode()) {
+					mutex.Lock()
+					pathMatches[dirName] = linkPath
+					mutex.Unlock()
 
-				if err != nil {
-					fmt.Println(err)
+					if err != nil {
+						fmt.Println(err)
+					}
 				}
 			}
 
-			if !info.IsDir() {
+			if !info.IsDir() && isFileExecutable(info.Mode()) {
 				mutex.Lock()
 				pathMatches[dirName] = ""
 				mutex.Unlock()

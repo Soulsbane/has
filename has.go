@@ -41,7 +41,7 @@ func isSymbolicLink(info fs.FileInfo) bool {
 	return info.Mode()&os.ModeSymlink == os.ModeSymlink
 }
 
-func isMatch(dirName string, nameToSearchFor string, info fs.FileInfo) {
+func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 	if isValidPath(dirName) {
 		if info.Name() == nameToSearchFor {
 			if isSymbolicLink(info) {
@@ -84,7 +84,7 @@ func findExecutable(nameToSearchFor string, noPath bool) {
 	for _, dirToSearch := range searchPaths {
 		walkFn := func(path string, fileInfo os.FileInfo) error {
 			mutex.Lock()
-			isMatch(path, nameToSearchFor, fileInfo)
+			addMatches(path, nameToSearchFor, fileInfo)
 			mutex.Unlock()
 
 			return nil

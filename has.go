@@ -48,26 +48,22 @@ func isFileExecutable(mode os.FileMode) bool {
 func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 	var mutex = &sync.Mutex{}
 
-	if isValidPath(dirName) { // FIXME: Cleanup multiple calls
-		if info.Name() == nameToSearchFor {
+	if isValidPath(dirName) {
+		if info.Name() == nameToSearchFor && isFileExecutable(info.Mode()) && !info.IsDir() {
 			if isSymbolicLink(info) {
 				linkPath, err := filepath.EvalSymlinks(dirName)
 
-				if isFileExecutable(info.Mode()) {
-					mutex.Lock()
-					pathMatches[dirName] = linkPath
-					mutex.Unlock()
+				mutex.Lock()
+				pathMatches[dirName] = linkPath
+				mutex.Unlock()
 
-					if err != nil {
-						fmt.Println(err)
-					}
+				if err != nil {
+					fmt.Println(err)
 				}
 			} else {
-				if !info.IsDir() && isFileExecutable(info.Mode()) {
-					mutex.Lock()
-					pathMatches[dirName] = ""
-					mutex.Unlock()
-				}
+				mutex.Lock()
+				pathMatches[dirName] = ""
+				mutex.Unlock()
 			}
 		}
 	}

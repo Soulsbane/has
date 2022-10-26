@@ -1,4 +1,4 @@
-package main
+package paths
 
 var searchPaths = [...]string{
 	"/usr/bin",

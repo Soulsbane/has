@@ -1,12 +1,10 @@
 package paths
 
-var searchPaths = [...]string{
+var SYSTEM_SEARCH_PATHS = [...]string{
 	"/usr/bin",
 	"/usr/sbin",
-
 	"/usr/local/bin",
 	"/usr/local/sbin",
-
 	"/bin",
 	"/sbin",
 	"/opt/bin",

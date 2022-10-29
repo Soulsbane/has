@@ -22,7 +22,7 @@ var pathMatches = map[string]string{}
 func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 	var mutex = &sync.Mutex{}
 
-	if paths.IsValidPath(dirName) {
+	if fileutil.IsExist(dirName) {
 		if info.Name() == nameToSearchFor && fileutils.IsFileExecutable(info.Mode()) && !info.IsDir() {
 			if fileutil.IsLink(dirName) {
 				linkPath, err := filepath.EvalSymlinks(dirName)

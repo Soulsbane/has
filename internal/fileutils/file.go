@@ -1,9 +1,10 @@
 package fileutils
 
 import (
-	"errors"
 	"os"
 	"runtime"
+
+	"github.com/duke-git/lancet/v2/fileutil"
 )
 
 func IsFileHidden(info os.DirEntry) bool {
@@ -14,23 +15,15 @@ func IsFileHidden(info os.DirEntry) bool {
 	return false
 }
 
-func FileOrPathExists(fileName string) bool {
-	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-
-	return true
-}
-
 // GetLinkPath returns the path of the link and a boolean indicating if the link destination path exists
 func GetLinkPath(name string) (string, bool) {
 	realPath, err := os.Readlink(name)
 
 	if err != nil {
-		return "", FileOrPathExists(realPath)
+		return "", fileutil.IsExist(realPath)
 	}
 
-	return realPath, FileOrPathExists(realPath)
+	return realPath, fileutil.IsExist(realPath)
 }
 
 func IsFileExecutable(mode os.FileMode) bool {

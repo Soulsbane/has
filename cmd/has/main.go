@@ -11,6 +11,7 @@ import (
 	"github.com/Soulsbane/has/internal/fileutils"
 	"github.com/Soulsbane/has/internal/paths"
 	"github.com/alexflint/go-arg"
+	"github.com/duke-git/lancet/v2/fileutil"
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/fatih/color"
 	"github.com/saracen/walker"
@@ -23,7 +24,7 @@ func addMatches(dirName string, nameToSearchFor string, info fs.FileInfo) {
 
 	if paths.IsValidPath(dirName) {
 		if info.Name() == nameToSearchFor && fileutils.IsFileExecutable(info.Mode()) && !info.IsDir() {
-			if fileutils.IsLink(info.Mode()) {
+			if fileutil.IsLink(dirName) {
 				linkPath, err := filepath.EvalSymlinks(dirName)
 
 				mutex.Lock()

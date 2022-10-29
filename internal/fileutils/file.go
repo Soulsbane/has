@@ -22,10 +22,6 @@ func FileOrPathExists(fileName string) bool {
 	return true
 }
 
-func IsLink(mode os.FileMode) bool {
-	return mode&os.ModeSymlink != 0
-}
-
 // GetLinkPath returns the path of the link and a boolean indicating if the link destination path exists
 func GetLinkPath(name string) (string, bool) {
 	realPath, err := os.Readlink(name)

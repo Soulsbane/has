@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/alexflint/go-arg v1.4.3
-	github.com/duke-git/lancet/v2 v2.1.8
+	github.com/duke-git/lancet/v2 v2.1.10
 	github.com/fatih/color v1.13.0
 	github.com/saracen/walker v0.1.3
 )
